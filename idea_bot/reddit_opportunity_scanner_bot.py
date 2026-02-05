@@ -22,7 +22,7 @@ logger = logging.getLogger("bot_reddit_opportunity_scanner")
 BOT_NAME = "reddit_opportunity_scanner"
 BOT_VERSION = "0.1.0"
 
-REDDIT_USER_AGENT = "Mozilla/5.0 (compatible; RedditScanner/1.0)"
+REDDIT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 
 SCAN_REDDIT_TOOL = ckit_cloudtool.CloudTool(
@@ -47,13 +47,44 @@ TOOLS = [SCAN_REDDIT_TOOL]
 
 
 def fetch_reddit_json(url: str) -> Dict[str, Any]:
-    headers = {"User-Agent": REDDIT_USER_AGENT}
+    headers = {
+        "User-Agent": REDDIT_USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1"
+    }
     try:
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         return response.json()
     except Exception as e:
-        logger.error(f"Failed to fetch {url}: {e}")
+        if '403' in str(e) or 'Blocked' in str(e):
+            logger.error(f"🛑 Failed to fetch {url}: {e}")
+            logger.error("""
+" "" 
+⚠️  Reddit now requires authentication for API access.
+
+To fix this, you need Reddit API credentials:
+1. Go to https://www.reddit.com/prefs/apps
+2. Click 'create app' or 'create another app'
+3. Fill in:
+   - name: reddit-scanner (or any name)
+   - type: select 'script'
+   - redirect uri: http://localhost:8080
+4. Save and copy the client ID (under your app name) and secret
+5. Set environment variables:
+   REDDIT_CLIENT_ID=<your_client_id>
+   REDDIT_CLIENT_SECRET=<your_secret>
+   REDDIT_USERNAME=<your_reddit_username>
+   REDDIT_PASSWORD=<your_reddit_password>
+
+Alternatively, try different subreddits or check if Reddit is temporarily blocking requests.
+""")
+        else:
+            logger.error(f"Failed to fetch {url}: {e}")
         return {}
 
 
