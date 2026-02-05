@@ -70,9 +70,10 @@ This bot automates the discovery process by:
 
 ### Error Handling
 
-- Invalid subreddit: Skip and log warning
-- Rate limit hit: Exponential backoff and retry
-- Empty results: Inform user "No actionable opportunities found"
+- Invalid subreddit: Skipped, logged to bot logs
+- Empty results: Returns message "No posts found in the specified subreddits"
+- API errors: Returns error message with details to user
+- Missing API keys: Returns setup error message to user
 
 ## Technical Requirements
 
@@ -93,16 +94,59 @@ This bot automates the discovery process by:
 ### Rate Limits
 
 - Reddit: ~60 requests/minute (unofficial)
-- Strategy: 2-second delay between requests
+- Strategy: 2.5-second delay between comment fetches
+- Max text sent to LLM: 50,000 characters (truncated if exceeded)
+
+## Implementation
+
+The bot is implemented as a Flexus bot with the following structure:
+
+```
+idea_bot/
+├── __init__.py
+├── reddit_opportunity_scanner_bot.py       # Main bot runtime
+├── reddit_opportunity_scanner_prompts.py   # System prompts
+├── reddit_opportunity_scanner_install.py   # Marketplace registration
+├── reddit_opportunity_scanner-256x256.webp # Avatar (placeholder)
+└── reddit_opportunity_scanner-1024x1536.webp # Marketplace image (placeholder)
+```
+
+### Key Components
+
+**reddit_opportunity_scanner_bot.py**:
+- `scan_reddit` tool: Orchestrates Reddit API calls and LLM analysis
+- `fetch_reddit_json()`: HTTP client with custom User-Agent
+- `extract_posts()`: Filters and ranks posts by engagement
+- `extract_comments_recursive()`: Parses nested comment trees
+- `analyze_with_llm()`: Calls OpenAI or Anthropic API for analysis
+
+**reddit_opportunity_scanner_prompts.py**:
+- `PRODUCT_DETECTIVE_PROMPT`: LLM system prompt defining analysis criteria
+- `main_prompt`: Bot personality and usage instructions
+
+**reddit_opportunity_scanner_install.py**:
+- `REDDIT_SETUP_SCHEMA`: Setup UI for API keys
+- `install()`: Registers bot in marketplace with metadata
+
+### Dependencies
+
+- `requests`: Reddit API HTTP calls
+- `openai`: GPT-4o-mini analysis (optional)
+- `anthropic`: Claude Haiku analysis (optional)
+- `flexus-client-kit`: Bot framework
 
 ## Installation
 
-1. Set environment variable:
-   - `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
-2. Run install script:
+1. Install the package:
    ```bash
-   python -m idea_bot.reddit_opportunity_scanner_install --ws=<workspace_id>
+   pip install -e /workspace
    ```
+
+2. Configure API keys in bot setup UI:
+   - `OPENAI_API_KEY` (for GPT-4o-mini) OR
+   - `ANTHROPIC_API_KEY` (for Claude Haiku)
+
+3. The bot will be available in the Flexus marketplace after BOB installs it
 
 ## Example Usage
 
