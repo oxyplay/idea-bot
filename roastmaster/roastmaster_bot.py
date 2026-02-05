@@ -72,8 +72,10 @@ def extract_urls_from_text(text: str) -> List[str]:
 
 
 async def capture_screenshot(url: str) -> Optional[str]:
+    browser = None
     try:
         async with async_playwright() as p:
+            logger.info(f"Launching browser for {url}")
             browser = await p.chromium.launch(headless=True)
             page = await browser.new_page(viewport={"width": 1920, "height": 1080})
 
@@ -82,7 +84,6 @@ async def capture_screenshot(url: str) -> Optional[str]:
             await page.wait_for_timeout(2000)
 
             screenshot_bytes = await page.screenshot(full_page=True, type="png")
-            await browser.close()
 
             img = Image.open(io.BytesIO(screenshot_bytes))
             max_height = 8000
@@ -103,6 +104,13 @@ async def capture_screenshot(url: str) -> Optional[str]:
     except Exception as e:
         logger.error(f"Error capturing screenshot for {url}: {e}")
         return None
+    finally:
+        if browser:
+            try:
+                await browser.close()
+                logger.info(f"Browser closed for {url}")
+            except Exception as e:
+                logger.warning(f"Error closing browser for {url}: {e}")
 
 
 async def roastmaster_main_loop(fclient: ckit_client.FlexusClient, rcx: ckit_bot_exec.RobotContext) -> None:
