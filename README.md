@@ -2,29 +2,30 @@
 
 ## Overview
 
-RoastMaster is a brutally honest Conversion Rate Optimization (CRO) expert that analyzes screenshots of websites, landing pages, and ad creatives. It provides direct, constructive feedback focused purely on conversion - not aesthetics.
+RoastMaster is a brutally honest Conversion Rate Optimization (CRO) expert that analyzes websites, landing pages, and ad creatives from URLs. It captures full-page screenshots and provides direct, constructive feedback focused purely on conversion - not aesthetics.
 
 ## Core Functionality
 
 ### What It Does
 
-- **Accepts image uploads** via chat (screenshots of websites, landing pages, ads)
+- **Accepts URLs** via chat (websites, landing pages, ads)
+- **Captures full-page screenshots** automatically using Playwright
 - **Analyzes conversion potential** using 4 pillars:
   1. **3-Second Test**: Is it immediately clear what the product is and who it's for?
   2. **Value Proposition**: Is the headline weak or generic?
   3. **Visual Hierarchy & UX**: Is the layout cluttered? Is the CTA easy to find?
   4. **Trust & Social Proof**: Does it look credible?
 - **Delivers structured roasts** with specific format (see Output Format below)
-- **Handles multiple screenshots** - can compare them together or analyze separately
+- **Handles multiple URLs** - can compare them together or analyze separately
 - **Remembers past roasts** stored as policy documents for tracking progress
 
 ### Analysis Modes
 
-- **Single analysis**: One screenshot → one roast
-- **Batch independent**: Multiple screenshots → separate roast for each
-- **Comparative**: Multiple screenshots → unified analysis (e.g., "before vs after", A/B variants)
+- **Single analysis**: One URL → one roast
+- **Batch independent**: Multiple URLs → separate roast for each
+- **Comparative**: Multiple URLs → unified analysis (e.g., "before vs after", A/B variants)
 
-User specifies mode when uploading images.
+User specifies mode when providing URLs.
 
 ## Tone & Personality
 
@@ -78,22 +79,24 @@ Every roast follows this exact structure:
 
 ## User Interaction Flow
 
-1. User uploads screenshot(s) in chat
+1. User provides URL(s) in chat (e.g., "roast https://example.com")
 2. User optionally specifies:
    - Analysis mode (compare vs separate)
    - Project name for tracking
-3. Bot analyzes using vision + CRO framework
-4. Bot delivers roast(s) in structured format
-5. Bot saves roast to policy document
-6. User can ask follow-ups, upload revised versions, or view history
+3. Bot captures full-page screenshots using Playwright
+4. Bot analyzes using vision + CRO framework
+5. Bot delivers roast(s) in structured format
+6. Bot saves roast to policy document
+7. User can ask follow-ups, provide revised URLs, or view history
 
 ## Technical Details
 
 - **Platform**: Flexus UI only (no external messengers)
-- **Image handling**: Supports common formats (PNG, JPG, WebP)
+- **Screenshot capture**: Playwright with headless Chromium, full-page screenshots
+- **Image handling**: Captures as PNG, resizes if exceeds 8000px height
 - **Model**: grok-4-1-fast-reasoning (requires vision capabilities for screenshot analysis)
 - **Storage**: Policy documents in Flexus MongoDB
-- **No external APIs**: Pure image analysis, no web scraping or integrations
+- **URL extraction**: Regex pattern matching for http:// and https:// URLs from user messages
 
 ## Implementation
 
@@ -108,13 +111,15 @@ Located in `/workspace/roastmaster/`:
 
 ### Tools
 
-1. **analyze_screenshot** - Analyzes images in thread using vision model
+1. **analyze_url** - Captures screenshots from URLs and analyzes using vision model
+   - Extracts URLs from user messages using regex
+   - Captures full-page screenshots via Playwright
    - Modes: single, separate, compare
-   - Detects images from recent messages
-   - Passes to vision model with CRO analysis prompt
+   - Converts screenshots to base64 for vision model
+   - Attaches screenshots to thread as images
 
 2. **policy_document** - Saves/retrieves roast history
-   - Stores roasts with metadata (timestamp, project name, score)
+   - Stores roasts with metadata (timestamp, project name, score, URLs)
    - Enables progress tracking across multiple submissions
 
 ### Setup & Installation
@@ -132,19 +137,22 @@ python -m roastmaster.roastmaster_bot
 ## Example Scenarios
 
 **Scenario 1: Landing Page Roast**
-- User uploads homepage screenshot
+- User: "roast https://example.com"
+- Bot captures homepage screenshot
 - Bot roasts weak headline, hidden CTA, no social proof
 - Suggests 3 fixes: rewrite headline, enlarge CTA button, add testimonials
 - Score: 4/10
 
 **Scenario 2: Before/After Comparison**
-- User uploads 2 screenshots (old vs new)
+- User: "compare https://example.com and https://example.com/new in compare mode"
+- Bot captures 2 screenshots
 - Bot analyzes improvements: better hierarchy, clearer value prop
 - Still flags missing trust signals
 - Score: 7/10 (improved from 4/10)
 
 **Scenario 3: Ad Creative Batch**
-- User uploads 5 ad variations
+- User: "analyze these separately: https://ads.example.com/v1 https://ads.example.com/v2 https://ads.example.com/v3"
+- Bot captures 5 ad variations
 - Bot analyzes each separately
 - Ranks them by conversion potential
 - Identifies best performer and why

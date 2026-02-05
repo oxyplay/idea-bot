@@ -2,9 +2,14 @@ import asyncio
 import logging
 import json
 import time
+import re
+import base64
+import io
 from typing import Dict, Any, Optional, List
 
 from pymongo import AsyncMongoClient
+from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
+from PIL import Image
 
 from flexus_client_kit import ckit_client
 from flexus_client_kit import ckit_cloudtool
@@ -20,20 +25,25 @@ from roastmaster import roastmaster_prompts
 logger = logging.getLogger("bot_roastmaster")
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.1.0"
+BOT_VERSION = "0.1.1"
 
 
-ANALYZE_SCREENSHOT_TOOL = ckit_cloudtool.CloudTool(
+ANALYZE_URL_TOOL = ckit_cloudtool.CloudTool(
     strict=True,
-    name="analyze_screenshot",
-    description="Analyze website/landing page screenshots for CRO (Conversion Rate Optimization) feedback",
+    name="analyze_url",
+    description="Capture screenshots of website URLs and analyze them for CRO (Conversion Rate Optimization) feedback",
     parameters={
         "type": "object",
         "properties": {
+            "urls": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "List of URLs to capture and analyze (extracted from user message)",
+            },
             "mode": {
                 "type": "string",
                 "enum": ["single", "separate", "compare"],
-                "description": "Analysis mode: single (one image), separate (multiple images analyzed independently), compare (multiple images analyzed together)",
+                "description": "Analysis mode: single (one URL), separate (multiple URLs analyzed independently), compare (multiple URLs analyzed together)",
             },
             "project_name": {
                 "type": ["string", "null"],
@@ -44,15 +54,55 @@ ANALYZE_SCREENSHOT_TOOL = ckit_cloudtool.CloudTool(
                 "description": "Optional additional context or specific questions from user",
             },
         },
-        "required": ["mode", "project_name", "context"],
+        "required": ["urls", "mode", "project_name", "context"],
         "additionalProperties": False,
     },
 )
 
 TOOLS = [
-    ANALYZE_SCREENSHOT_TOOL,
+    ANALYZE_URL_TOOL,
     fi_pdoc.POLICY_DOCUMENT_TOOL,
 ]
+
+
+def extract_urls_from_text(text: str) -> List[str]:
+    url_pattern = r'https?://[^\s<>"{}|\\^`\[\]]+'
+    urls = re.findall(url_pattern, text)
+    return urls
+
+
+async def capture_screenshot(url: str) -> Optional[str]:
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page(viewport={"width": 1920, "height": 1080})
+
+            logger.info(f"Navigating to {url}")
+            await page.goto(url, wait_until="networkidle", timeout=30000)
+            await page.wait_for_timeout(2000)
+
+            screenshot_bytes = await page.screenshot(full_page=True, type="png")
+            await browser.close()
+
+            img = Image.open(io.BytesIO(screenshot_bytes))
+            max_height = 8000
+            if img.height > max_height:
+                ratio = max_height / img.height
+                new_width = int(img.width * ratio)
+                img = img.resize((new_width, max_height), Image.Resampling.LANCZOS)
+                output = io.BytesIO()
+                img.save(output, format="PNG")
+                screenshot_bytes = output.getvalue()
+
+            screenshot_b64 = base64.b64encode(screenshot_bytes).decode("utf-8")
+            logger.info(f"Captured screenshot for {url}, size: {len(screenshot_b64)} bytes")
+            return screenshot_b64
+    except PlaywrightTimeoutError:
+        logger.error(f"Timeout while loading {url}")
+        return None
+    except Exception as e:
+        logger.error(f"Error capturing screenshot for {url}: {e}")
+        return None
 
 
 async def roastmaster_main_loop(fclient: ckit_client.FlexusClient, rcx: ckit_bot_exec.RobotContext) -> None:
@@ -76,49 +126,73 @@ async def roastmaster_main_loop(fclient: ckit_client.FlexusClient, rcx: ckit_bot
     async def updated_thread_in_db(th: ckit_ask_model.FThreadOutput):
         pass
 
-    @rcx.on_tool_call(ANALYZE_SCREENSHOT_TOOL.name)
-    async def toolcall_analyze_screenshot(toolcall: ckit_cloudtool.FCloudtoolCall, model_produced_args: Dict[str, Any]) -> str:
+    @rcx.on_tool_call(ANALYZE_URL_TOOL.name)
+    async def toolcall_analyze_url(toolcall: ckit_cloudtool.FCloudtoolCall, model_produced_args: Dict[str, Any]) -> str:
+        urls = model_produced_args.get("urls", [])
         mode = model_produced_args.get("mode", "single")
         project_name = model_produced_args.get("project_name")
         context = model_produced_args.get("context")
+
+        if not urls:
+            return "ERROR: No URLs provided. Please provide at least one URL to analyze."
+
+        logger.info(f"Capturing screenshots for {len(urls)} URL(s), mode={mode}, project={project_name}")
+
+        screenshots = []
+        failed_urls = []
+
+        for url in urls:
+            screenshot_b64 = await capture_screenshot(url)
+            if screenshot_b64:
+                screenshots.append({
+                    "url": url,
+                    "image_b64": screenshot_b64,
+                })
+            else:
+                failed_urls.append(url)
+
+        if not screenshots:
+            return f"ERROR: Failed to capture screenshots for all URLs. Failed URLs: {', '.join(failed_urls)}"
+
+        result_parts = []
+        if failed_urls:
+            result_parts.append(f"WARNING: Failed to capture {len(failed_urls)} URL(s): {', '.join(failed_urls)}")
+
+        result_parts.append(f"Successfully captured {len(screenshots)} screenshot(s). Analysis mode: {mode}.")
 
         thread = await ckit_ask_model.thread_get(fclient, toolcall.fcall_ft_id)
         if not thread:
             return "ERROR: Could not retrieve thread information"
 
-        messages = await ckit_ask_model.thread_list_messages(fclient, toolcall.fcall_ft_id)
-        if not messages:
-            return "ERROR: No messages found in thread"
+        for idx, screenshot_data in enumerate(screenshots):
+            img_bytes = base64.b64decode(screenshot_data["image_b64"])
+            attachment_result = await ckit_ask_model.thread_add_user_message(
+                fclient,
+                toolcall.fcall_ft_id,
+                msg_text=f"Screenshot of {screenshot_data['url']}",
+                msg_attachments=[{
+                    "att_filename": f"screenshot_{idx}.png",
+                    "att_mime": "image/png",
+                    "att_data_b64": screenshot_data["image_b64"],
+                }],
+            )
+            logger.info(f"Added screenshot attachment for {screenshot_data['url']}")
 
-        images = []
-        for msg in reversed(messages):
-            if msg.msg_role == "user" and msg.msg_attachments:
-                for att in msg.msg_attachments:
-                    if att.att_mime and att.att_mime.startswith("image/"):
-                        images.append({
-                            "att_id": att.att_id,
-                            "filename": att.att_filename,
-                            "mime": att.att_mime,
-                        })
-
-        if not images:
-            return "ERROR: No images found in recent messages. Please upload a screenshot first."
-
-        logger.info(f"Found {len(images)} image(s) in thread, mode={mode}, project={project_name}")
-
-        analysis_prompt = roastmaster_prompts.CRO_ANALYSIS_SYSTEM_PROMPT
-
+        analysis_instructions = []
         if mode == "compare":
-            analysis_prompt += f"\n\nYou are analyzing {len(images)} images together in COMPARISON mode. Compare and contrast them, noting improvements or regressions between versions."
+            analysis_instructions.append(f"Analyzing {len(screenshots)} URLs together in COMPARISON mode. Compare and contrast them, noting improvements or regressions between versions.")
         elif mode == "separate":
-            analysis_prompt += f"\n\nYou are analyzing {len(images)} images in SEPARATE mode. Provide an independent roast for each image."
+            analysis_instructions.append(f"Analyzing {len(screenshots)} URLs in SEPARATE mode. Provide an independent roast for each URL.")
         else:
-            analysis_prompt += "\n\nYou are analyzing a single image. Provide one comprehensive roast."
+            analysis_instructions.append("Analyzing a single URL. Provide one comprehensive roast.")
 
         if context:
-            analysis_prompt += f"\n\nUser context: {context}"
+            analysis_instructions.append(f"User context: {context}")
 
-        return f"Images detected: {len(images)} image(s). Analysis mode: {mode}. The vision model will now analyze the screenshot(s) based on the 4 CRO pillars and return a structured roast in the required format."
+        result_parts.extend(analysis_instructions)
+        result_parts.append("\nNow analyzing the screenshot(s) based on the 4 CRO pillars using the vision model...")
+
+        return "\n".join(result_parts)
 
     @rcx.on_tool_call(fi_pdoc.POLICY_DOCUMENT_TOOL.name)
     async def toolcall_policy_document(toolcall: ckit_cloudtool.FCloudtoolCall, model_produced_args: Dict[str, Any]) -> str:

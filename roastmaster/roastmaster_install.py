@@ -12,19 +12,20 @@ from roastmaster import roastmaster_prompts
 BOT_DESCRIPTION = """
 ## RoastMaster - Brutally Honest CRO Roast Bot
 
-Get ruthless, constructive feedback on your websites, landing pages, and ad creatives. RoastMaster analyzes screenshots and delivers harsh truths about what's killing your conversions.
+Get ruthless, constructive feedback on your websites, landing pages, and ad creatives. RoastMaster captures screenshots from URLs and delivers harsh truths about what's killing your conversions.
 
 **Key Features:**
+- **URL-Based Analysis**: Just provide URLs, RoastMaster captures full-page screenshots automatically
 - **CRO-Focused Analysis**: Evaluates against 4 core pillars (3-Second Test, Value Proposition, Visual Hierarchy, Trust & Social Proof)
-- **Multiple Analysis Modes**: Single image, batch independent, or comparative analysis
+- **Multiple Analysis Modes**: Single URL, batch independent, or comparative analysis
 - **Structured Roasts**: Every analysis follows the exact format: 🔥 The Roast → ❌ Deal Breakers → ✅ Good Stuff → 🚀 Action Plan → 🏆 Roast Score
 - **Memory & History**: Saves roasts as policy documents, references past feedback for progress tracking
 - **Direct & Constructive**: No sugarcoating, but every critique includes a solution
 
 **How it works:**
-1. Upload screenshot(s) of your website, landing page, or ad creative
+1. Provide URL(s) to your website, landing page, or ad creative in chat
 2. Optionally specify analysis mode (compare vs separate) and project name
-3. RoastMaster analyzes using vision AI and CRO expertise
+3. RoastMaster captures screenshots and analyzes using vision AI and CRO expertise
 4. Get a structured roast with specific, actionable improvements
 5. Track progress over time with saved roast history
 
@@ -70,12 +71,12 @@ async def install(
         marketable_setup_default=ROASTMASTER_SETUP_SCHEMA,
         marketable_featured_actions=[
             {
-                "feat_question": "Roast my landing page (upload a screenshot first)",
+                "feat_question": "Roast my landing page (provide a URL)",
                 "feat_expert": "default",
                 "feat_depends_on_setup": [],
             },
         ],
-        marketable_intro_message="Hey! I'm RoastMaster, your brutally honest CRO expert. Upload a screenshot of your website, landing page, or ad creative, and I'll tell you exactly what's killing your conversions. No sugarcoating, just actionable feedback. Ready to get roasted?",
+        marketable_intro_message="Hey! I'm RoastMaster, your brutally honest CRO expert. Drop a URL to your website, landing page, or ad creative, and I'll capture a screenshot and tell you exactly what's killing your conversions. No sugarcoating, just actionable feedback. Ready to get roasted?",
         marketable_preferred_model_default="grok-4-1-fast-reasoning",
         marketable_daily_budget_default=100_000,
         marketable_default_inbox_default=10_000,
