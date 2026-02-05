@@ -91,9 +91,43 @@ Every roast follows this exact structure:
 
 - **Platform**: Flexus UI only (no external messengers)
 - **Image handling**: Supports common formats (PNG, JPG, WebP)
-- **Model**: Vision-capable model for screenshot analysis
+- **Model**: grok-4-1-fast-reasoning (requires vision capabilities for screenshot analysis)
 - **Storage**: Policy documents in Flexus MongoDB
 - **No external APIs**: Pure image analysis, no web scraping or integrations
+
+## Implementation
+
+### Bot Structure
+
+Located in `/workspace/roastmaster/`:
+- `roastmaster_bot.py` - Main bot runtime with tool handlers
+- `roastmaster_prompts.py` - System prompts for CRO analysis
+- `roastmaster_install.py` - Marketplace registration
+- `roastmaster-1024x1536.webp` - Large marketplace image
+- `roastmaster-256x256.webp` - Small avatar image
+
+### Tools
+
+1. **analyze_screenshot** - Analyzes images in thread using vision model
+   - Modes: single, separate, compare
+   - Detects images from recent messages
+   - Passes to vision model with CRO analysis prompt
+
+2. **policy_document** - Saves/retrieves roast history
+   - Stores roasts with metadata (timestamp, project name, score)
+   - Enables progress tracking across multiple submissions
+
+### Setup & Installation
+
+```bash
+pip install -e /workspace
+python -m roastmaster.roastmaster_install --ws <workspace_id>
+```
+
+The bot runs via:
+```bash
+python -m roastmaster.roastmaster_bot
+```
 
 ## Example Scenarios
 
