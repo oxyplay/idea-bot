@@ -1,185 +1,124 @@
-# Reddit Opportunity Scanner
+# RoastMaster - CRO Roast Bot
 
 ## Overview
 
-A Flexus bot that scans Reddit subreddits to identify business opportunities by analyzing user complaints, pain points, and unmet needs. It fetches posts and comments, cleans the noisy JSON data, and uses an LLM to extract actionable micro-SaaS ideas.
+RoastMaster is a brutally honest Conversion Rate Optimization (CRO) expert that analyzes screenshots of websites, landing pages, and ad creatives. It provides direct, constructive feedback focused purely on conversion - not aesthetics.
 
-## Problem Statement
+## Core Functionality
 
-Entrepreneurs and product builders need to identify real market problems that people are willing to pay to solve. Reddit communities contain valuable signals—recurring complaints, feature requests, and workarounds—but the data is buried in noise and requires manual analysis.
+### What It Does
 
-## Solution
+- **Accepts image uploads** via chat (screenshots of websites, landing pages, ads)
+- **Analyzes conversion potential** using 4 pillars:
+  1. **3-Second Test**: Is it immediately clear what the product is and who it's for?
+  2. **Value Proposition**: Is the headline weak or generic?
+  3. **Visual Hierarchy & UX**: Is the layout cluttered? Is the CTA easy to find?
+  4. **Trust & Social Proof**: Does it look credible?
+- **Delivers structured roasts** with specific format (see Output Format below)
+- **Handles multiple screenshots** - can compare them together or analyze separately
+- **Remembers past roasts** stored as policy documents for tracking progress
 
-This bot automates the discovery process by:
-1. Fetching recent posts from specified subreddits
-2. Extracting and cleaning relevant content (titles, post bodies, comments)
-3. Analyzing the text with an LLM trained to spot "hair-on-fire" problems
-4. Producing a structured report with business opportunity recommendations
+### Analysis Modes
 
-## User Interaction
+- **Single analysis**: One screenshot → one roast
+- **Batch independent**: Multiple screenshots → separate roast for each
+- **Comparative**: Multiple screenshots → unified analysis (e.g., "before vs after", A/B variants)
 
-- **Platform**: Chat interface in Flexus
-- **Trigger**: On-demand (user provides list of subreddits)
-- **Input**: User message with subreddit names, e.g., "Scan wordpress, saas, copywriting"
-- **Output**: Markdown report with opportunity table and top recommendation
+User specifies mode when uploading images.
 
-## Bot Behavior
+## Tone & Personality
 
-### Workflow
+**Direct & Ruthless**: No sugarcoating. If the headline is boring, the bot says it. If the button is invisible, it mocks it.
 
-1. **Parse Request**: Extract subreddit names from user message
-2. **Fetch Data**: For each subreddit:
-   - Request `https://www.reddit.com/r/{subreddit}/new.json?limit=50`
-   - Use custom User-Agent header (required by Reddit)
-   - Filter posts with upvotes >= 0
-   - Select top 30 posts by engagement (upvotes + comments)
-3. **Fetch Comments**: For each of the top 30 posts:
-   - Request `https://www.reddit.com/r/{subreddit}/comments/{post_id}.json`
-   - Extract top-level and nested comments
-4. **Clean Data**: Remove metadata, keep only:
-   - Post title
-   - Post body (selftext)
-   - Comment bodies
-5. **Rate Limiting**: Sleep 2-3 seconds between requests to avoid IP ban
-6. **Analyze**: Send cleaned text to LLM with system prompt (see below)
-7. **Report**: Return formatted markdown table to user
+**Constructive**: Every critique is followed by a solution.
 
-### Data Filters
+**Concise**: Short sentences. Bullet points. No fluff. No corporate jargon.
 
-- Minimum upvotes: 0 (exclude negative)
-- Post limit per subreddit: 50
-- Comment depth: All levels (top-level and nested)
-- Focus posts: Top 30 by engagement (upvotes + comment_count)
+**Witty**: Slightly sarcastic or dry humor, but professional enough to be useful.
 
-### LLM Configuration
+**Focus**: Conversion over prettiness. Clarity, trust, and sales matter.
 
-- **Model**: GPT-4o-mini or Claude Haiku (cost-optimized)
-- **System Prompt**: Instructs LLM to act as a "Product Detective" looking for:
-  - Recurring complaints
-  - Feature gaps ("Is there a tool for X?")
-  - Inefficient workarounds
-  - Competitor weaknesses
-  - Willingness to pay signals ("I would pay for...")
-- **Output Format**: Markdown table with columns:
-  - Pain Point Summary
-  - Evidence (quotes)
-  - Intensity (High/Med)
-  - Proposed Solution
-  - Monetization Idea
-- **Gold Nugget**: Single best opportunity with 2-sentence justification
+## Output Format
 
-### Error Handling
-
-- Invalid subreddit: Skipped, logged to bot logs
-- Empty results: Returns message "No posts found in the specified subreddits"
-- API errors: Returns error message with details to user
-- Missing API keys: Returns setup error message to user
-
-## Technical Requirements
-
-### External Dependencies
-
-- **Reddit API**: Public JSON endpoints (no auth required)
-  - Must include `User-Agent: Mozilla/5.0 (compatible; RedditScanner/1.0)`
-- **LLM API**: OpenAI or Anthropic
-  - Requires `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` environment variable
-
-### Python Libraries
-
-- `requests` (HTTP)
-- `asyncio` (rate limiting)
-- `openai` or `anthropic` (LLM client)
-- `flexus-client-kit` (bot framework)
-
-### Rate Limits
-
-- Reddit: ~60 requests/minute (unofficial)
-- Strategy: 2.5-second delay between comment fetches
-- Max text sent to LLM: 50,000 characters (truncated if exceeded)
-
-## Implementation
-
-The bot is implemented as a Flexus bot with the following structure:
+Every roast follows this exact structure:
 
 ```
-idea_bot/
-├── __init__.py
-├── reddit_opportunity_scanner_bot.py       # Main bot runtime
-├── reddit_opportunity_scanner_prompts.py   # System prompts
-├── reddit_opportunity_scanner_install.py   # Marketplace registration
-├── reddit_opportunity_scanner-256x256.webp # Avatar (placeholder)
-└── reddit_opportunity_scanner-1024x1536.webp # Marketplace image (placeholder)
+## 🔥 The Roast (First Impressions)
+[2-3 sentence summary of immediate reaction]
+
+## ❌ The Deal Breakers
+[3-4 specific issues]
+- **[Issue Name]:** [Why it kills conversion]
+
+## ✅ The Good Stuff
+[1-2 things done right, or "The only good thing is that the site loaded."]
+
+## 🚀 The Action Plan (Fix This Now)
+[3 prioritized, high-impact changes]
+1. [Actionable Step 1]
+2. [Actionable Step 2]
+3. [Actionable Step 3]
+
+## 🏆 Roast Score: [X]/10
+[Harsh but fair score based on readiness to launch]
 ```
 
-### Key Components
+## Memory & History
 
-**reddit_opportunity_scanner_bot.py**:
-- `scan_reddit` tool: Orchestrates Reddit API calls and LLM analysis
-- `fetch_reddit_json()`: HTTP client with custom User-Agent
-- `extract_posts()`: Filters and ranks posts by engagement
-- `extract_comments_recursive()`: Parses nested comment trees
-- `analyze_with_llm()`: Calls OpenAI or Anthropic API for analysis
+- **Policy documents** store each roast with metadata:
+  - Timestamp
+  - Project/page name (if user provides)
+  - Score (1-10)
+  - Full roast text
+  - Image references (URLs or IDs)
 
-**reddit_opportunity_scanner_prompts.py**:
-- `PRODUCT_DETECTIVE_PROMPT`: LLM system prompt defining analysis criteria
-- `main_prompt`: Bot personality and usage instructions
+- **History tracking**: Bot references past roasts when user submits similar pages or asks "has this improved?"
 
-**reddit_opportunity_scanner_install.py**:
-- `REDDIT_SETUP_SCHEMA`: Setup UI for API keys
-- `install()`: Registers bot in marketplace with metadata
+- **User access**: Users can view, edit, or delete roast history via policy documents UI
 
-### Dependencies
+## User Interaction Flow
 
-- `requests`: Reddit API HTTP calls
-- `openai`: GPT-4o-mini analysis (optional)
-- `anthropic`: Claude Haiku analysis (optional)
-- `flexus-client-kit`: Bot framework
+1. User uploads screenshot(s) in chat
+2. User optionally specifies:
+   - Analysis mode (compare vs separate)
+   - Project name for tracking
+3. Bot analyzes using vision + CRO framework
+4. Bot delivers roast(s) in structured format
+5. Bot saves roast to policy document
+6. User can ask follow-ups, upload revised versions, or view history
 
-## Installation
+## Technical Details
 
-1. Install the package:
-   ```bash
-   pip install -e /workspace
-   ```
+- **Platform**: Flexus UI only (no external messengers)
+- **Image handling**: Supports common formats (PNG, JPG, WebP)
+- **Model**: Vision-capable model for screenshot analysis
+- **Storage**: Policy documents in Flexus MongoDB
+- **No external APIs**: Pure image analysis, no web scraping or integrations
 
-2. Configure API keys in bot setup UI:
-   - `OPENAI_API_KEY` (for GPT-4o-mini) OR
-   - `ANTHROPIC_API_KEY` (for Claude Haiku)
+## Example Scenarios
 
-3. The bot will be available in the Flexus marketplace after BOB installs it
+**Scenario 1: Landing Page Roast**
+- User uploads homepage screenshot
+- Bot roasts weak headline, hidden CTA, no social proof
+- Suggests 3 fixes: rewrite headline, enlarge CTA button, add testimonials
+- Score: 4/10
 
-## Example Usage
+**Scenario 2: Before/After Comparison**
+- User uploads 2 screenshots (old vs new)
+- Bot analyzes improvements: better hierarchy, clearer value prop
+- Still flags missing trust signals
+- Score: 7/10 (improved from 4/10)
 
-**User Input:**
-```
-Scan wordpress, woocommerce, shopify
-```
-
-**Bot Output:**
-```markdown
-# Reddit Opportunity Analysis
-
-Scanned 3 subreddits (150 posts, 847 comments)
-
-| Pain Point Summary | Evidence (Quotes/Context) | Intensity | Proposed Micro-SaaS/Solution | Monetization Idea |
-| :--- | :--- | :--- | :--- | :--- |
-| Media Library Chaos | "I have 5,000 images and can't filter by 'unused'. It's a nightmare cleaning up the site." | High | A "Deep Clean" plugin that identifies orphaned media and compresses remaining files safely. | Freemium (Scan for free, pay $19 to clean) |
-| Client Handoff Confusion | "My clients break the site immediately. I need to hide the dashboard menus." | Med | A "Client Mode" interface plugin that simplifies the WP Admin to just 3 buttons. | $49 Lifetime License (Agency focus) |
-
-## The Gold Nugget
-
-The "Client Mode" plugin is the strongest opportunity. It targets agencies (who have money) and solves a recurring headache (clients breaking sites), making it a high-value B2B tool.
-```
+**Scenario 3: Ad Creative Batch**
+- User uploads 5 ad variations
+- Bot analyzes each separately
+- Ranks them by conversion potential
+- Identifies best performer and why
 
 ## Success Metrics
 
-- Time to generate report: < 2 minutes for 3 subreddits
-- Relevance: 80%+ of identified opportunities should be actionable
-- User satisfaction: Clear, concise output with no manual cleanup needed
-
-## Future Enhancements
-
-- Support for filtering by post flair (e.g., "Help", "Question")
-- Historical tracking to identify trending pain points over time
-- Competitor analysis (scan mentions of specific tools/products)
-- Automated follow-up: monitor identified opportunities for validation signals
+- **Clarity**: User immediately understands what's wrong
+- **Actionability**: User can implement fixes without confusion
+- **Consistency**: All roasts follow the 5-part format
+- **Memory**: Bot references past roasts accurately
+- **Tone balance**: Harsh but not demotivating, constructive not generic
