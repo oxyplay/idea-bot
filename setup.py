@@ -10,7 +10,6 @@ setup(
         "openai",
         "anthropic",
         "pillow",
-        "playwright",
     ],
     package_data={"": ["*.webp", "*.png", "*.html", "*.lark", "*.json"]},
 )
