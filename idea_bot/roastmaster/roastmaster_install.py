@@ -6,7 +6,7 @@ from pathlib import Path
 from flexus_client_kit import ckit_client, ckit_bot_install
 from flexus_client_kit import ckit_cloudtool
 
-from roastmaster import roastmaster_prompts
+from idea_bot.roastmaster import roastmaster_prompts
 
 
 BOT_DESCRIPTION = """
@@ -67,7 +67,7 @@ async def install(
         marketable_description=BOT_DESCRIPTION,
         marketable_typical_group="Marketing / CRO",
         marketable_github_repo="https://github.com/yourusername/roastmaster",
-        marketable_run_this="python -m roastmaster.roastmaster_bot",
+        marketable_run_this="python -m idea_bot.roastmaster.roastmaster_bot",
         marketable_setup_default=ROASTMASTER_SETUP_SCHEMA,
         marketable_featured_actions=[
             {
@@ -98,7 +98,7 @@ async def install(
 
 
 if __name__ == "__main__":
-    from roastmaster import roastmaster_bot
+    from idea_bot.roastmaster import roastmaster_bot
     args = ckit_bot_install.bot_install_argparse()
     client = ckit_client.FlexusClient("roastmaster_install")
     asyncio.run(install(

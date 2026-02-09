@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="flexus-bots",
+    name="idea_bot",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "flexus-client-kit",
+        "flexus-client-kit @ git+https://github.com/smallcloudai/flexus-client-kit.git",
         "requests",
         "openai",
         "anthropic",
