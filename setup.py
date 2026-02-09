@@ -8,6 +8,7 @@ setup(
         "flexus-client-kit @ git+https://github.com/smallcloudai/flexus-client-kit.git",
         "requests",
         "openai",
+        "playwright",
         "anthropic",
         "pillow",
     ],

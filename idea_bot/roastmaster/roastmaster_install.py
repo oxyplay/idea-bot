@@ -55,7 +55,7 @@ async def install(
     pic_small = base64.b64encode(open(Path(__file__).with_name("roastmaster-256x256.webp"), "rb").read()).decode("ascii")
 
     await ckit_bot_install.marketplace_upsert_dev_bot(
-        client,
+        client,  
         ws_id=ws_id,
         marketable_name=bot_name,
         marketable_version=bot_version,
@@ -66,7 +66,7 @@ async def install(
         marketable_occupation="Conversion Rate Optimization Expert",
         marketable_description=BOT_DESCRIPTION,
         marketable_typical_group="Marketing / CRO",
-        marketable_github_repo="https://github.com/yourusername/roastmaster",
+        marketable_github_repo="https://github.com/oxyplay/idea-bot",
         marketable_run_this="python -m idea_bot.roastmaster.roastmaster_bot",
         marketable_setup_default=ROASTMASTER_SETUP_SCHEMA,
         marketable_featured_actions=[
