@@ -26,7 +26,7 @@ from roastmaster import roastmaster_prompts
 logger = logging.getLogger("bot_roastmaster")
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.1.3"
+BOT_VERSION = "1.0.0"
 
 
 ANALYZE_URL_TOOL = ckit_cloudtool.CloudTool(
