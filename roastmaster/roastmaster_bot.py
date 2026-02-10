@@ -20,13 +20,13 @@ from flexus_client_kit import ckit_ask_model
 from flexus_client_kit import ckit_mongo
 from flexus_client_kit import ckit_external_auth
 from flexus_client_kit.integrations import fi_pdoc
-from idea_bot.roastmaster import roastmaster_install
-from idea_bot.roastmaster import roastmaster_prompts
+from roastmaster import roastmaster_install
+from roastmaster import roastmaster_prompts
 
 logger = logging.getLogger("bot_roastmaster")
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.1.2"
+BOT_VERSION = "0.1.3"
 
 
 ANALYZE_URL_TOOL = ckit_cloudtool.CloudTool(
