@@ -9,7 +9,7 @@ RoastMaster is a brutally honest Conversion Rate Optimization (CRO) expert that 
 ### What It Does
 
 - **Accepts URLs** via chat (websites, landing pages, ads)
-- **Captures full-page screenshots** automatically using Playwright
+- **Captures browser screenshots** using the backend web tool
 - **Analyzes conversion potential** using 4 pillars:
   1. **3-Second Test**: Is it immediately clear what the product is and who it's for?
   2. **Value Proposition**: Is the headline weak or generic?
@@ -83,7 +83,7 @@ Every roast follows this exact structure:
 2. User optionally specifies:
    - Analysis mode (compare vs separate)
    - Project name for tracking
-3. Bot captures full-page screenshots using Playwright
+3. Bot captures screenshots via the backend web tool
 4. Bot analyzes using vision + CRO framework
 5. Bot delivers roast(s) in structured format
 6. Bot saves roast to policy document
@@ -92,11 +92,11 @@ Every roast follows this exact structure:
 ## Technical Details
 
 - **Platform**: Flexus UI only (no external messengers)
-- **Screenshot capture**: Playwright with headless Chromium, full-page screenshots
-- **Image handling**: Captures as PNG, resizes if exceeds 8000px height
+- **Screenshot capture**: Backend web tool (Playwright)
+- **Image handling**: Stored via chat-image pipeline (WEBP, max 1280px)
 - **Model**: grok-4-1-fast-reasoning (requires vision capabilities for screenshot analysis)
 - **Storage**: Policy documents in Flexus MongoDB
-- **URL extraction**: Regex pattern matching for http:// and https:// URLs from user messages
+- **URL extraction**: Model parses http:// and https:// URLs from user messages
 
 ## Implementation
 
@@ -111,12 +111,10 @@ Located in `/workspace/roastmaster/`:
 
 ### Tools
 
-1. **analyze_url** - Captures screenshots from URLs and analyzes using vision model
-   - Extracts URLs from user messages using regex
-   - Captures full-page screenshots via Playwright
+1. **web** - Built-in web tool for screenshots
+   - Captures browser screenshots via backend Playwright
    - Modes: single, separate, compare
-   - Converts screenshots to base64 for vision model
-   - Attaches screenshots to thread as images
+   - Returns image URLs for vision analysis
 
 2. **policy_document** - Saves/retrieves roast history
    - Stores roasts with metadata (timestamp, project name, score, URLs)

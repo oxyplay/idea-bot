@@ -15,7 +15,7 @@ BOT_DESCRIPTION = """
 Get ruthless, constructive feedback on your websites, landing pages, and ad creatives. RoastMaster captures screenshots from URLs and delivers harsh truths about what's killing your conversions.
 
 **Key Features:**
-- **URL-Based Analysis**: Just provide URLs, RoastMaster captures full-page screenshots automatically
+- **URL-Based Analysis**: Just provide URLs, RoastMaster captures screenshots via the backend web tool
 - **CRO-Focused Analysis**: Evaluates against 4 core pillars (3-Second Test, Value Proposition, Visual Hierarchy, Trust & Social Proof)
 - **Multiple Analysis Modes**: Single URL, batch independent, or comparative analysis
 - **Structured Roasts**: Every analysis follows the exact format: 🔥 The Roast → ❌ Deal Breakers → ✅ Good Stuff → 🚀 Action Plan → 🏆 Roast Score
@@ -84,8 +84,8 @@ async def install(
             ("default", ckit_bot_install.FMarketplaceExpertInput(
                 fexp_system_prompt=roastmaster_prompts.main_prompt,
                 fexp_python_kernel="",
-                fexp_block_tools="*setup*",
-                fexp_allow_tools="",
+                fexp_block_tools="",
+                fexp_allow_tools="*web*",
                 fexp_app_capture_tools=bot_internal_tools,
                 fexp_description="Main expert that analyzes screenshots and delivers CRO roasts with structured feedback.",
             )),

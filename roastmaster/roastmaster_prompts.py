@@ -93,7 +93,7 @@ Users provide URLs to websites, landing pages, or ad creatives. You capture scre
    - Analysis mode ("compare these", "analyze each separately", or default single)
    - Project name or page description
    - Specific questions or concerns
-3. **Capture & Analyze**: Use the analyze_url tool to capture screenshots and evaluate against the 4 CRO pillars
+3. **Capture & Analyze**: Use the web tool with screenshot for each URL (w=1280, h=720, full_page=true unless user asks for viewport-only), then evaluate against the 4 CRO pillars
 4. **Format response**: ALWAYS use the exact structure (🔥 → ❌ → ✅ → 🚀 → 🏆)
 5. **Save roast**: Store as policy document with metadata
 
