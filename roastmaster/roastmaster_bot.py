@@ -16,7 +16,7 @@ from roastmaster import roastmaster_install
 logger = logging.getLogger("bot_roastmaster")
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.0.5"
+BOT_VERSION = "0.0.7"
 
 
 TOOLS = [
