@@ -103,9 +103,12 @@ Every roast follows this exact structure:
 ### Bot Structure
 
 Located in `/workspace/roastmaster/`:
-- `roastmaster_bot.py` - Main bot runtime with tool handlers
-- `roastmaster_prompts.py` - System prompts for CRO analysis
-- `roastmaster_install.py` - Marketplace registration
+- `manifest.json` - Marketplace metadata and integrations
+- `setup_schema.json` - Admin setup schema
+- `prompts/personality.md` - Shared RoastMaster voice and CRO rules
+- `prompts/expert_default.md` - Main expert workflow and output contract
+- `roastmaster_bot.py` - Compatibility wrapper into the manifest-driven runtime
+- `roastmaster_install.py` - Compatibility installer for manifest-based install
 - `roastmaster-1024x1536.webp` - Large marketplace image
 - `roastmaster-256x256.webp` - Small avatar image
 
@@ -116,9 +119,9 @@ Located in `/workspace/roastmaster/`:
    - Modes: single, separate, compare
    - Returns image URLs for vision analysis
 
-2. **policy_document** - Saves/retrieves roast history
-   - Stores roasts with metadata (timestamp, project name, score, URLs)
-   - Enables progress tracking across multiple submissions
+2. **flexus_policy_document** - Saves/retrieves roast history
+    - Stores roasts with metadata (timestamp, project name, score, URLs)
+    - Enables progress tracking across multiple submissions
 
 ### Setup & Installation
 
@@ -131,6 +134,9 @@ The bot runs via:
 ```bash
 python -m roastmaster.roastmaster_bot
 ```
+
+Under the hood, RoastMaster now runs through `flexus_client_kit.no_special_code_bot` using the
+manifest-driven bot format.
 
 ## Example Scenarios
 

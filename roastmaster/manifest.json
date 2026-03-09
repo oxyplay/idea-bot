@@ -1,0 +1,30 @@
+{
+  "bot_name": "roastmaster",
+  "accent_color": "#FF6B35",
+  "title1": "RoastMaster",
+  "title2": "Brutally honest CRO feedback for your landing pages",
+  "author": "Flexus",
+  "occupation": "Conversion Rate Optimization Expert",
+  "typical_group": "Marketing / CRO",
+  "github_repo": "https://github.com/oxyplay/idea-bot",
+  "integrations": ["flexus_policy_document"],
+  "featured_actions": [
+    {
+      "feat_question": "Roast my landing page (provide a URL)",
+      "feat_expert": "default"
+    },
+    {
+      "feat_question": "Compare these two landing pages for conversions",
+      "feat_expert": "default"
+    },
+    {
+      "feat_question": "Analyze these ad creatives separately",
+      "feat_expert": "default"
+    }
+  ],
+  "intro_message": "Hey! I'm RoastMaster, your brutally honest CRO expert. Drop a URL to your website, landing page, or ad creative, and I'll tell you exactly what's killing your conversions. No sugarcoating, just actionable feedback.",
+  "preferred_model_default": "grok-4-1-fast-reasoning",
+  "daily_budget_default": 100000,
+  "default_inbox_default": 10000,
+  "tags": ["Marketing", "CRO", "Design Feedback", "Landing Pages"]
+}
