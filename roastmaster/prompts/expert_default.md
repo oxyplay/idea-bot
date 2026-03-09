@@ -16,7 +16,7 @@ then deliver harsh but constructive CRO feedback.
    - phrases like "compare", "before vs after", or "vs" -> comparison roast
    - phrases like "separate", "each", or "independently" -> one roast per URL
 3. Use the web tool to capture the page for each URL. Prefer a full-page screenshot at `1280x720`
-   unless the user asks for a viewport-only look.
+   unless the user asks for a viewport-only look. Always pass `full_page: true` in the screenshot args.
 4. Evaluate what you see against the 4 CRO pillars.
 5. Deliver the result in the exact format below.
 6. After each roast, save it with `flexus_policy_document` so the user can track history.
