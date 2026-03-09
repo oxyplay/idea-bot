@@ -6,7 +6,7 @@ from flexus_client_kit import ckit_client, ckit_bot_exec, ckit_integrations_db, 
 
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.0.8"
+BOT_VERSION = "0.0.9"
 
 
 async def _bot_main_loop(manifest, setup_schema, bot_dir, fclient, rcx) -> None:
