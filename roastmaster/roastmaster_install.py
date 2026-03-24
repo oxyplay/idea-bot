@@ -6,7 +6,7 @@ from pathlib import Path
 from flexus_client_kit import ckit_client, ckit_integrations_db, ckit_skills, no_special_code_bot
 
 
-BOT_VERSION = "0.0.8"
+BOT_VERSION = "0.0.9"
 
 
 def _parse_args() -> argparse.Namespace:
