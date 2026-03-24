@@ -1,35 +1,41 @@
-from pathlib import Path
-
 import asyncio
+import logging
 
-from flexus_client_kit import ckit_client, ckit_bot_exec, ckit_integrations_db, ckit_skills, no_special_code_bot
+from flexus_client_kit import ckit_bot_exec, ckit_client, ckit_integrations_db, ckit_shutdown
 
+import roastmaster_install
+
+
+logger = logging.getLogger("bot_roastmaster")
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.0.9"
+BOT_VERSION = "0.0.10"
+ROASTMASTER_INTEGRATIONS = roastmaster_install.ROASTMASTER_INTEGRATIONS
+TOOLS = [tool for record in ROASTMASTER_INTEGRATIONS for tool in record.integr_tools]
 
 
-async def _bot_main_loop(manifest, setup_schema, bot_dir, fclient, rcx) -> None:
-    await no_special_code_bot.bot_main_loop(manifest, setup_schema, bot_dir, fclient, rcx)
+async def roastmaster_main_loop(fclient: ckit_client.FlexusClient, rcx: ckit_bot_exec.RobotContext) -> None:
+    setup = ckit_bot_exec.official_setup_mixing_procedure(roastmaster_install.ROASTMASTER_SETUP_SCHEMA, rcx.persona.persona_setup)
+    await ckit_integrations_db.main_loop_integrations_init(ROASTMASTER_INTEGRATIONS, rcx, setup)
+
+    try:
+        while not ckit_shutdown.shutdown_event.is_set():
+            await rcx.unpark_collected_events(sleep_if_no_work=10.0)
+    finally:
+        logger.info("%s exit", rcx.persona.persona_id)
 
 
 def main() -> None:
-    bot_dir = Path(__file__).resolve().parent
-    manifest, setup_schema = no_special_code_bot.load_manifest_and_setup_schema(bot_dir)
-    bot_name = manifest["bot_name"]
-    skills = ckit_skills.static_skills_find(bot_dir, manifest.get("shared_skills_allowlist", ""))
-    integrations = ckit_integrations_db.static_integrations_load(bot_dir, manifest["integrations"], builtin_skills=skills)
-    all_tools = [tool for record in integrations for tool in record.integr_tools]
     scenario_fn = ckit_bot_exec.parse_bot_args()
-    fclient = ckit_client.FlexusClient(ckit_client.bot_service_name(bot_name, BOT_VERSION), endpoint="/v1/jailed-bot")
+    fclient = ckit_client.FlexusClient(ckit_client.bot_service_name(BOT_NAME, BOT_VERSION), endpoint="/v1/jailed-bot")
     asyncio.run(ckit_bot_exec.run_bots_in_this_group(
         fclient,
-        marketable_name=bot_name,
+        marketable_name=BOT_NAME,
         marketable_version_str=BOT_VERSION,
-        bot_main_loop=lambda fc, rcx: _bot_main_loop(manifest, setup_schema, bot_dir, fc, rcx),
-        inprocess_tools=all_tools,
+        bot_main_loop=roastmaster_main_loop,
+        inprocess_tools=TOOLS,
         scenario_fn=scenario_fn,
-        install_func=lambda client, bn, bv, tools: no_special_code_bot.install_from_manifest(manifest, setup_schema, bot_dir, client, bn, bv, tools),
+        install_func=roastmaster_install.install,
     ))
 
 
