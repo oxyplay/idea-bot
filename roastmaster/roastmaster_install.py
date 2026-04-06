@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 import base64
-import inspect
 import json
 import os
 from pathlib import Path
@@ -22,24 +21,28 @@ ROASTMASTER_INTEGRATIONS = ckit_integrations_db.static_integrations_load(
 )
 
 def _make_default_expert() -> ckit_bot_install.FMarketplaceExpertInput:
-    params = inspect.signature(ckit_bot_install.FMarketplaceExpertInput).parameters
-    kwargs: dict[str, object] = {
+    base_kwargs: dict[str, object] = {
         "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
         "fexp_python_kernel": "",
         "fexp_allow_tools": "web,flexus_policy_document",
         "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
         "fexp_builtin_skills": ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS),
     }
+    attempts = [
+        {"fexp_subchat_only": True, "fexp_block_tools": ""},
+        {"fexp_subchat_only": True},
+        {"fexp_nature": "NATURE_SUBCHAT", "fexp_block_tools": ""},
+        {"fexp_nature": "NATURE_SUBCHAT"},
+    ]
+    errors: list[str] = []
 
-    if "fexp_block_tools" in params:
-        kwargs["fexp_block_tools"] = ""
+    for extra_kwargs in attempts:
+        try:
+            return ckit_bot_install.FMarketplaceExpertInput(**base_kwargs, **extra_kwargs)
+        except TypeError as exc:
+            errors.append(str(exc))
 
-    if "fexp_subchat_only" in params:
-        kwargs["fexp_subchat_only"] = True
-    elif "fexp_nature" in params:
-        kwargs["fexp_nature"] = "NATURE_SUBCHAT"
-
-    return ckit_bot_install.FMarketplaceExpertInput(**kwargs)
+    raise TypeError("Could not construct FMarketplaceExpertInput with supported signature variants: " + " | ".join(errors))
 
 
 EXPERTS = [
