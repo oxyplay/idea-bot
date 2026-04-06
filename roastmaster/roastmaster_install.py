@@ -25,7 +25,6 @@ EXPERTS = [
     ("default", ckit_bot_install.FMarketplaceExpertInput(
         fexp_system_prompt=roastmaster_prompts.SYSTEM_PROMPT,
         fexp_python_kernel="",
-        fexp_block_tools="",
         fexp_allow_tools="*web*,flexus_policy_document",
         fexp_description="CRO roast expert for landing pages, websites, and ad creatives.",
         fexp_builtin_skills=ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS),
