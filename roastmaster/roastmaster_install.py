@@ -96,7 +96,7 @@ async def install(
         marketable_experts=[(name, expert.filter_tools(tools)) for name, expert in EXPERTS],
         add_integrations_into_expert_system_prompt=ROASTMASTER_INTEGRATIONS,
         marketable_tags=["Marketing", "CRO", "Design Feedback", "Landing Pages"],
-        marketable_schedule=[prompts_common.SCHED_PICK_ONE_5M | {"sched_when": "EVERY:1m"}],
+        marketable_schedule=[],
         marketable_picture_big_b64=pic_big,
         marketable_picture_small_b64=pic_small,
         marketable_forms={},
