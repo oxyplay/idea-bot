@@ -3,7 +3,7 @@ import logging
 
 from flexus_client_kit import ckit_bot_exec, ckit_client, ckit_integrations_db, ckit_shutdown
 
-import roastmaster_install
+from roastmaster import roastmaster_install
 
 
 logger = logging.getLogger("bot_roastmaster")

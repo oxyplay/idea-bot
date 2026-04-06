@@ -121,7 +121,7 @@ if __name__ == "__main__":
     else:
         raise SystemExit("Set FLEXUS_WORKSPACE or pass --ws <workspace-id> before running the installer")
 
-    import roastmaster_bot
+    from roastmaster import roastmaster_bot
 
     client = ckit_client.FlexusClient("roastmaster_install")
     asyncio.run(install(client, bot_name=roastmaster_bot.BOT_NAME, bot_version=roastmaster_bot.BOT_VERSION, tools=roastmaster_bot.TOOLS))
