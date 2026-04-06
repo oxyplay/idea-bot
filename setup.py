@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="roastmaster",
-    version="0.0.111",
+    version="0.0.112",
     packages=find_packages(),
     install_requires=[
         "flexus-client-kit @ git+https://github.com/smallcloudai/flexus-client-kit.git",
