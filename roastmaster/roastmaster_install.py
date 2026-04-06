@@ -6,9 +6,9 @@ import os
 from pathlib import Path
 
 from flexus_client_kit import ckit_bot_install, ckit_client, ckit_cloudtool, ckit_integrations_db, ckit_skills
-from flexus_simple_bots import prompts_common
 
 from roastmaster import roastmaster_prompts
+from roastmaster import roastmaster_marketplace
 
 
 ROASTMASTER_ROOTDIR = Path(__file__).parent
@@ -86,7 +86,7 @@ async def install(
     pic_big = _load_pic_b64(ROASTMASTER_ROOTDIR / "roastmaster-1024x1536.webp")
     pic_small = _load_pic_b64(ROASTMASTER_ROOTDIR / "roastmaster-256x256.webp")
 
-    await ckit_bot_install.marketplace_upsert_dev_bot(
+    await roastmaster_marketplace.marketplace_upsert_dev_bot_compat(
         client,
         ws_id=client.ws_id,
         marketable_name=bot_name,
@@ -107,8 +107,7 @@ async def install(
             {"feat_question": "Analyze these ad creatives separately", "feat_expert": "default", "feat_depends_on_setup": []},
         ],
         marketable_intro_message="Hey! I'm RoastMaster, your brutally honest CRO expert. Drop a URL to your website, landing page, or ad creative, and I'll tell you exactly what's killing your conversions. No sugarcoating, just actionable feedback.",
-        marketable_preferred_model_expensive="grok-4-1-fast-reasoning",
-        marketable_preferred_model_cheap="gpt-5.4-nano",
+        marketable_preferred_model_default="grok-4-1-fast-reasoning",
         marketable_daily_budget_default=100_000,
         marketable_default_inbox_default=10_000,
         marketable_experts=[(name, expert.filter_tools(tools)) for name, expert in EXPERTS],

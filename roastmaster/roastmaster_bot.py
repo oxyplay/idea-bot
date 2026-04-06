@@ -10,7 +10,7 @@ from roastmaster import roastmaster_install
 logger = logging.getLogger("bot_roastmaster")
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.0.102"
+BOT_VERSION = "0.0.103"
 ROASTMASTER_INTEGRATIONS = roastmaster_install.ROASTMASTER_INTEGRATIONS
 
 KANBAN_COMPAT_TOOL = ckit_cloudtool.CloudTool(
