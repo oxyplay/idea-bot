@@ -9,7 +9,7 @@ from flexus_client_kit import ckit_bot_install, ckit_client, ckit_cloudtool, cki
 from flexus_simple_bots import prompts_common
 
 from roastmaster import roastmaster_prompts
-from roastmaster_marketplace import marketplace_upsert_dev_bot_compat
+from roastmaster import roastmaster_marketplace
 
 
 ROASTMASTER_ROOTDIR = Path(__file__).parent
@@ -69,7 +69,7 @@ async def install(
     pic_big = _load_pic_b64(ROASTMASTER_ROOTDIR / "roastmaster-1024x1536.webp")
     pic_small = _load_pic_b64(ROASTMASTER_ROOTDIR / "roastmaster-256x256.webp")
 
-    await marketplace_upsert_dev_bot_compat(
+    await roastmaster_marketplace.marketplace_upsert_dev_bot_compat(
         client,
         ws_id=client.ws_id,
         marketable_name=bot_name,
