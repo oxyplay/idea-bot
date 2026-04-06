@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import base64
+import inspect
 import json
 import os
 from pathlib import Path
@@ -20,15 +21,29 @@ ROASTMASTER_INTEGRATIONS = ckit_integrations_db.static_integrations_load(
     builtin_skills=ROASTMASTER_SKILLS,
 )
 
+def _make_default_expert() -> ckit_bot_install.FMarketplaceExpertInput:
+    params = inspect.signature(ckit_bot_install.FMarketplaceExpertInput).parameters
+    kwargs: dict[str, object] = {
+        "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
+        "fexp_python_kernel": "",
+        "fexp_allow_tools": "web,flexus_policy_document",
+        "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
+        "fexp_builtin_skills": ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS),
+    }
+
+    if "fexp_block_tools" in params:
+        kwargs["fexp_block_tools"] = ""
+
+    if "fexp_subchat_only" in params:
+        kwargs["fexp_subchat_only"] = True
+    elif "fexp_nature" in params:
+        kwargs["fexp_nature"] = "NATURE_SUBCHAT"
+
+    return ckit_bot_install.FMarketplaceExpertInput(**kwargs)
+
+
 EXPERTS = [
-    ("default", ckit_bot_install.FMarketplaceExpertInput(
-        fexp_system_prompt=roastmaster_prompts.SYSTEM_PROMPT,
-        fexp_python_kernel="",
-        fexp_allow_tools="web,flexus_policy_document",
-        fexp_nature="NATURE_INTERACTIVE",
-        fexp_description="CRO roast expert for landing pages, websites, and ad creatives.",
-        fexp_builtin_skills=ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS),
-    )),
+    ("default", _make_default_expert()),
 ]
 
 BOT_DESCRIPTION = """# RoastMaster - Landing Page Conversion Roast
