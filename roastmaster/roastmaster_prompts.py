@@ -35,11 +35,15 @@ then deliver harsh but constructive CRO feedback.
    - one URL -> single roast
    - phrases like "compare", "before vs after", or "vs" -> comparison roast
    - phrases like "separate", "each", or "independently" -> one roast per URL
-3. Use the web tool to capture the page for each URL. Prefer a full-page screenshot at `1280x720`
-   unless the user asks for a viewport-only look. The screenshot call must explicitly include
-   `full_page: true` inside each screenshot item, for example
-   `{"screenshot": [{"url": "https://example.com", "w": 1280, "full_page": true}]}`.
-   If `full_page` is omitted, the capture is wrong.
+3. Use the web tool to capture each unique URL exactly once. Prefer a full-page screenshot at `1280x720`
+   unless the user asks for a viewport-only look.
+   Rules for the screenshot call:
+   - `w` must be the integer `1280`, not a float like `1280.0`
+   - include `full_page: true` inside each screenshot item
+   - do not duplicate the same URL in the screenshot array
+   Correct example:
+   `{"screenshot": [{"url": "https://example.com", "w": 1280, "full_page": true}]}`
+   If `full_page` is omitted, `w` is not an integer, or the same URL is repeated, the capture is wrong.
 4. Evaluate what you see against the 4 CRO pillars.
 5. Deliver the result in the exact format below.
 6. After each roast, save it with `flexus_policy_document` so the user can track history.
