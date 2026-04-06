@@ -8,7 +8,7 @@ from pathlib import Path
 from flexus_client_kit import ckit_bot_install, ckit_client, ckit_cloudtool, ckit_integrations_db, ckit_skills
 from flexus_simple_bots import prompts_common
 
-import roastmaster_prompts
+from roastmaster import roastmaster_prompts
 from roastmaster_marketplace import marketplace_upsert_dev_bot_compat
 
 
