@@ -1,8 +1,7 @@
 import asyncio
 import logging
-from typing import Any
 
-from flexus_client_kit import ckit_bot_exec, ckit_client, ckit_cloudtool, ckit_integrations_db, ckit_shutdown
+from flexus_client_kit import ckit_bot_exec, ckit_client, ckit_integrations_db, ckit_shutdown
 
 from roastmaster import roastmaster_install
 
@@ -10,35 +9,14 @@ from roastmaster import roastmaster_install
 logger = logging.getLogger("bot_roastmaster")
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.0.103"
+BOT_VERSION = "0.0.104"
 ROASTMASTER_INTEGRATIONS = roastmaster_install.ROASTMASTER_INTEGRATIONS
-
-KANBAN_COMPAT_TOOL = ckit_cloudtool.CloudTool(
-    strict=False,
-    name="flexus_bot_kanban",
-    description="Compatibility placeholder tool for kanban requirements.",
-    parameters={
-        "type": "object",
-        "properties": {
-            "op": {"type": "string", "description": "Requested operation."},
-            "args": {"type": "object", "description": "Operation arguments."},
-        },
-    },
-)
-
-TOOLS = [
-    KANBAN_COMPAT_TOOL,
-    *[tool for record in ROASTMASTER_INTEGRATIONS for tool in record.integr_tools],
-]
+TOOLS = [tool for record in ROASTMASTER_INTEGRATIONS for tool in record.integr_tools]
 
 
 async def roastmaster_main_loop(fclient: ckit_client.FlexusClient, rcx: ckit_bot_exec.RobotContext) -> None:
     setup = ckit_bot_exec.official_setup_mixing_procedure(roastmaster_install.ROASTMASTER_SETUP_SCHEMA, rcx.persona.persona_setup)
     await ckit_integrations_db.main_loop_integrations_init(ROASTMASTER_INTEGRATIONS, rcx, setup)
-
-    @rcx.on_tool_call(KANBAN_COMPAT_TOOL.name)
-    async def _kanban_compat_tool(_toolcall: ckit_cloudtool.FCloudtoolCall, _model_args: dict[str, Any]) -> str:
-        return "Kanban operations are not used by RoastMaster."
 
     try:
         while not ckit_shutdown.shutdown_event.is_set():

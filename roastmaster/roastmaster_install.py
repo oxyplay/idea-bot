@@ -24,21 +24,34 @@ def _make_default_expert() -> ckit_bot_install.FMarketplaceExpertInput:
     base_kwargs: dict[str, object] = {
         "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
         "fexp_python_kernel": "",
-        "fexp_allow_tools": "web,flexus_policy_document,*bot_kanban",
+        "fexp_allow_tools": "web,flexus_policy_document",
         "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
         "fexp_builtin_skills": ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS),
     }
+    nature_candidates: list[str] = []
+    for attr in dir(ckit_bot_install):
+        if attr.startswith("NATURE_") and "SUBCHAT" in attr:
+            value = getattr(ckit_bot_install, attr)
+            if isinstance(value, str):
+                nature_candidates.append(value)
+    nature_candidates.extend(["NATURE_SUBCHAT_ONLY", "NATURE_SUBCHAT"])
+    nature_candidates = list(dict.fromkeys(nature_candidates))
+
     attempts = [
         {"fexp_subchat_only": True, "fexp_block_tools": ""},
         {"fexp_subchat_only": True},
-        {"fexp_nature": "NATURE_SUBCHAT", "fexp_block_tools": ""},
-        {"fexp_nature": "NATURE_SUBCHAT"},
     ]
+    for nature in nature_candidates:
+        attempts.append({"fexp_nature": nature, "fexp_block_tools": ""})
+        attempts.append({"fexp_nature": nature})
+
     errors: list[str] = []
 
     for extra_kwargs in attempts:
         try:
-            return ckit_bot_install.FMarketplaceExpertInput(**base_kwargs, **extra_kwargs)
+            expert = ckit_bot_install.FMarketplaceExpertInput(**base_kwargs, **extra_kwargs)
+            print("RoastMaster expert mode:", extra_kwargs)
+            return expert
         except TypeError as exc:
             errors.append(str(exc))
 
