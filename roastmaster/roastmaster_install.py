@@ -24,7 +24,7 @@ EXPERTS = [
     ("default", ckit_bot_install.FMarketplaceExpertInput(
         fexp_system_prompt=roastmaster_prompts.SYSTEM_PROMPT,
         fexp_python_kernel="",
-        fexp_allow_tools="*web*,flexus_policy_document",
+        fexp_allow_tools="web,flexus_policy_document",
         fexp_nature="NATURE_INTERACTIVE",
         fexp_description="CRO roast expert for landing pages, websites, and ad creatives.",
         fexp_builtin_skills=ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS),
@@ -81,7 +81,7 @@ async def install(
         marketable_description=BOT_DESCRIPTION,
         marketable_typical_group="Marketing / CRO",
         marketable_github_repo="https://github.com/oxyplay/idea-bot",
-        marketable_run_this="python -m roastmaster_bot",
+        marketable_run_this="python -m roastmaster.roastmaster_bot",
         marketable_setup_default=ROASTMASTER_SETUP_SCHEMA,
         marketable_featured_actions=[
             {"feat_question": "Roast my landing page (provide a URL)", "feat_expert": "default", "feat_depends_on_setup": []},
