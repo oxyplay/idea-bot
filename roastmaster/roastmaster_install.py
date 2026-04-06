@@ -24,7 +24,7 @@ def _make_default_expert() -> ckit_bot_install.FMarketplaceExpertInput:
     base_kwargs: dict[str, object] = {
         "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
         "fexp_python_kernel": "",
-        "fexp_allow_tools": "web,flexus_policy_document",
+        "fexp_allow_tools": "web,flexus_policy_document,flexus_bot_kanban",
         "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
         "fexp_builtin_skills": ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS),
     }
