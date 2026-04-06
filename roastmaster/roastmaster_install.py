@@ -1,10 +1,8 @@
 import argparse
 import asyncio
 import base64
-import dataclasses
 import json
 import os
-import fnmatch
 from pathlib import Path
 
 from flexus_client_kit import ckit_bot_install, ckit_client, ckit_cloudtool, ckit_integrations_db, ckit_skills
@@ -23,69 +21,40 @@ ROASTMASTER_INTEGRATIONS = ckit_integrations_db.static_integrations_load(
 )
 
 def _make_default_expert() -> ckit_bot_install.FMarketplaceExpertInput:
-    base_kwargs: dict[str, object] = {
-        "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
-        "fexp_python_kernel": "",
-        "fexp_allow_tools": "flexus_bot_kanban,web,flexus_policy_document",
-        "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
-        "fexp_builtin_skills": ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS),
-    }
-    nature_candidates: list[str] = []
-    for attr in dir(ckit_bot_install):
-        if attr.startswith("NATURE_") and "SUBCHAT" in attr:
-            value = getattr(ckit_bot_install, attr)
-            if isinstance(value, str):
-                nature_candidates.append(value)
-    nature_candidates.extend(["NATURE_SUBCHAT_ONLY", "NATURE_SUBCHAT"])
-    nature_candidates = list(dict.fromkeys(nature_candidates))
-
+    builtin_skills = ckit_skills.read_name_description(ROASTMASTER_ROOTDIR, ROASTMASTER_SKILLS)
     attempts = [
-        {"fexp_subchat_only": True, "fexp_block_tools": ""},
-        {"fexp_subchat_only": True},
+        {
+            "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
+            "fexp_python_kernel": "",
+            "fexp_allow_tools": "web,flexus_policy_document",
+            "fexp_nature": "NATURE_NO_TASK",
+            "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
+            "fexp_builtin_skills": builtin_skills,
+            "fexp_subchat_only": True,
+            "fexp_block_tools": "",
+        },
+        {
+            "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
+            "fexp_python_kernel": "",
+            "fexp_allow_tools": "web,flexus_policy_document",
+            "fexp_nature": "NATURE_NO_TASK",
+            "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
+            "fexp_builtin_skills": builtin_skills,
+            "fexp_subchat_only": True,
+        },
     ]
-    for nature in nature_candidates:
-        attempts.append({"fexp_nature": nature, "fexp_block_tools": ""})
-        attempts.append({"fexp_nature": nature})
-
     errors: list[str] = []
-
-    for extra_kwargs in attempts:
+    for kwargs in attempts:
         try:
-            expert = ckit_bot_install.FMarketplaceExpertInput(**base_kwargs, **extra_kwargs)
-            print("RoastMaster expert mode:", extra_kwargs)
-            return expert
+            return ckit_bot_install.FMarketplaceExpertInput(**kwargs)
         except TypeError as exc:
             errors.append(str(exc))
-
-    raise TypeError("Could not construct FMarketplaceExpertInput with supported signature variants: " + " | ".join(errors))
+    raise TypeError("Could not construct FMarketplaceExpertInput: " + " | ".join(errors))
 
 
 EXPERTS = [
     ("default", _make_default_expert()),
 ]
-
-
-def _prepare_expert_for_install(
-    expert: ckit_bot_install.FMarketplaceExpertInput,
-    tools: list[ckit_cloudtool.CloudTool],
-) -> ckit_bot_install.FMarketplaceExpertInput:
-    allow = [part.strip() for part in expert.fexp_allow_tools.split(",") if part.strip()]
-    block = [part.strip() for part in getattr(expert, "fexp_block_tools", "").split(",") if part.strip()]
-
-    def _tool_allowed_locally(name: str) -> bool:
-        if allow:
-            return any(fnmatch.fnmatch(name, pattern) for pattern in allow)
-        return not any(fnmatch.fnmatch(name, pattern) for pattern in block)
-
-    filtered = [tool for tool in tools if _tool_allowed_locally(tool.name) and tool.name != "flexus_fetch_skill"]
-    if expert.fexp_builtin_skills != "[]":
-        filtered.append(ckit_skills.FETCH_SKILL_TOOL)
-
-    return dataclasses.replace(
-        expert,
-        fexp_app_capture_tools=json.dumps([tool.openai_style_tool() for tool in filtered]),
-    )
-
 BOT_DESCRIPTION = """# RoastMaster - Landing Page Conversion Roast
 
 Brutally honest CRO feedback for landing pages, websites, and ad creatives.
@@ -148,7 +117,7 @@ async def install(
         marketable_preferred_model_cheap="gpt-5.4-nano",
         marketable_daily_budget_default=100_000,
         marketable_default_inbox_default=10_000,
-        marketable_experts=[(name, _prepare_expert_for_install(expert, tools)) for name, expert in EXPERTS],
+        marketable_experts=[(name, expert.filter_tools(tools)) for name, expert in EXPERTS],
         add_integrations_into_expert_system_prompt=ROASTMASTER_INTEGRATIONS,
         marketable_tags=["Marketing", "CRO", "Design Feedback", "Landing Pages"],
         marketable_schedule=[],
