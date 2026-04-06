@@ -9,7 +9,7 @@ from roastmaster import roastmaster_install
 logger = logging.getLogger("bot_roastmaster")
 
 BOT_NAME = "roastmaster"
-BOT_VERSION = "0.0.106"
+BOT_VERSION = "0.0.108"
 ROASTMASTER_INTEGRATIONS = roastmaster_install.ROASTMASTER_INTEGRATIONS
 TOOLS = [tool for record in ROASTMASTER_INTEGRATIONS for tool in record.integr_tools]
 

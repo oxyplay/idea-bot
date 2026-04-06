@@ -26,21 +26,19 @@ def _make_default_expert() -> ckit_bot_install.FMarketplaceExpertInput:
         {
             "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
             "fexp_python_kernel": "",
-            "fexp_allow_tools": "web,flexus_policy_document",
-            "fexp_nature": "NATURE_NO_TASK",
+            "fexp_allow_tools": "flexus_kanban_safe,web,flexus_policy_document",
+            "fexp_nature": "NATURE_INTERACTIVE",
             "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
             "fexp_builtin_skills": builtin_skills,
-            "fexp_subchat_only": True,
             "fexp_block_tools": "",
         },
         {
             "fexp_system_prompt": roastmaster_prompts.SYSTEM_PROMPT,
             "fexp_python_kernel": "",
-            "fexp_allow_tools": "web,flexus_policy_document",
-            "fexp_nature": "NATURE_NO_TASK",
+            "fexp_allow_tools": "flexus_kanban_safe,web,flexus_policy_document",
+            "fexp_nature": "NATURE_INTERACTIVE",
             "fexp_description": "CRO roast expert for landing pages, websites, and ad creatives.",
             "fexp_builtin_skills": builtin_skills,
-            "fexp_subchat_only": True,
         },
     ]
     errors: list[str] = []
