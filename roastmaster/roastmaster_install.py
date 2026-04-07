@@ -12,7 +12,20 @@ from roastmaster import roastmaster_marketplace
 
 
 ROASTMASTER_ROOTDIR = Path(__file__).parent
-ROASTMASTER_SKILLS = ckit_skills.static_skills_find(ROASTMASTER_ROOTDIR, shared_skills_allowlist="")
+
+
+def _static_skills_find_compat() -> list[str]:
+    try:
+        return ckit_skills.static_skills_find(
+            ROASTMASTER_ROOTDIR,
+            shared_skills_allowlist="",
+            integration_skills_allowlist="",
+        )
+    except TypeError:
+        return ckit_skills.static_skills_find(ROASTMASTER_ROOTDIR, shared_skills_allowlist="")
+
+
+ROASTMASTER_SKILLS = _static_skills_find_compat()
 ROASTMASTER_SETUP_SCHEMA = json.loads((ROASTMASTER_ROOTDIR / "setup_schema.json").read_text())
 ROASTMASTER_INTEGRATIONS = ckit_integrations_db.static_integrations_load(
     ROASTMASTER_ROOTDIR,
