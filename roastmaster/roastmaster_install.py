@@ -119,9 +119,9 @@ async def install(
         marketable_run_this="python -m roastmaster.roastmaster_bot",
         marketable_setup_default=ROASTMASTER_SETUP_SCHEMA,
         marketable_featured_actions=[
-            {"feat_question": "Roast my landing page (provide a URL)", "feat_expert": "default", "feat_depends_on_setup": []},
-            {"feat_question": "Compare these two landing pages for conversions", "feat_expert": "default", "feat_depends_on_setup": []},
-            {"feat_question": "Analyze these ad creatives separately", "feat_expert": "default", "feat_depends_on_setup": []},
+            {"feat_question": "Roast a landing page: paste one URL", "feat_expert": "default", "feat_depends_on_setup": []},
+            {"feat_question": "Compare landing pages: paste two URLs", "feat_expert": "default", "feat_depends_on_setup": []},
+            {"feat_question": "Review ad creatives: upload images or paste links", "feat_expert": "default", "feat_depends_on_setup": []},
         ],
         marketable_intro_message="Hey! I'm RoastMaster, your brutally honest CRO expert. Drop a URL to your website, landing page, or ad creative, and I'll tell you exactly what's killing your conversions. No sugarcoating, just actionable feedback.",
         marketable_preferred_model_expensive="grok-4-1-fast-reasoning",
