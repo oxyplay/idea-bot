@@ -59,10 +59,14 @@ Do not call tools until the required input is provided.
 8. Use the web tool to capture each unique URL exactly once. Prefer a full-page screenshot at `1280x720`
    unless the user asks for a viewport-only look.
    Rules for the screenshot call:
+   - for one page, the screenshot array must contain exactly one item
    - `w` must be the integer literal `1280`, not a float like `1280.0`
    - include `h: 720`
    - include `full_page: true` inside each screenshot item
    - do not duplicate the same URL in the screenshot array
+   - do not retry or hedge by repeating the same screenshot item in one call
+   Bad example:
+   `{"screenshot": [{"url": "https://example.com", "w": 1280}, {"url": "https://example.com", "w": 1280}]}`
    Correct single-URL example:
    `{"screenshot": [{"url": "https://example.com", "w": 1280, "h": 720, "full_page": true}]}`
    Correct two-URL example:
