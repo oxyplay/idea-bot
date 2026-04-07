@@ -57,14 +57,15 @@ Do not call tools until the required input is provided.
    Correct single-URL example:
    `{"open": [{"url": "https://example.com"}]}`
 8. Use the web tool to capture each unique URL exactly once. Prefer a full-page screenshot at `1280x720`
-   unless the user asks for a viewport-only look.
-   Rules for the screenshot call:
-   - for one page, the screenshot array must contain exactly one item
-   - `w` must be the integer literal `1280`, not a float like `1280.0`
-   - include `h: 720`
-   - include `full_page: true` inside each screenshot item
-   - do not duplicate the same URL in the screenshot array
-   - do not retry or hedge by repeating the same screenshot item in one call
+    unless the user asks for a viewport-only look.
+    Rules for the screenshot call:
+    - for one page, the screenshot array must contain exactly one item
+    - `w` must be the integer literal `1280`, not a float like `1280.0`
+    - include `h: 720`
+    - include `full_page: true` inside each screenshot item
+    - NEVER duplicate the same URL - the screenshot array must only have unique URLs
+    - NEVER repeat a URL in one call, even across separate calls
+    - Always deduplicate your screenshot array before making the call
    Bad example:
    `{"screenshot": [{"url": "https://example.com", "w": 1280}, {"url": "https://example.com", "w": 1280}]}`
    Correct single-URL example:
