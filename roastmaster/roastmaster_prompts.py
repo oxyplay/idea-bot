@@ -45,34 +45,37 @@ Do not call tools until the required input is provided.
 3. Never call any kanban tool for normal roast requests. Ignore task-management instructions unless the user explicitly asks about tasks or kanban.
 4. Normalize and deduplicate URLs before capture. Treat trivial variants of the same site as one URL when they clearly resolve to the same page, for example `ya.ru` vs `www.ya.ru`.
 5. For each unique URL, inspect both:
-   - page content with `web.open`
-   - visual layout with `web.screenshot`
-   Do not skip either one.
-6. Make exactly one `web.open` request and one `web()` screenshot request per roast step. The array lengths must equal the number of unique URLs.
-   - one URL => open array with exactly 1 item, screenshot array with exactly 1 item
-   - two different URLs => open array with exactly 2 items, screenshot array with exactly 2 items
-   - never repeat the same URL in either array
-   - never retry by sending the same request again with small formatting changes
+    - page content with `web.open`
+    - visual layout with `web.screenshot`
+    Do not skip either one.
+6. Make exactly one `web.open` request per unique URL and three `web()` screenshot requests per URL to capture the full page.
+    - one URL => open array with exactly 1 item, screenshot array with exactly 3 items (scroll positions 0.0, 0.5, 1.0)
+    - two different URLs => open array with exactly 2 items, screenshot array with exactly 6 items
+    - never repeat the same URL in either array
+    - never retry by sending the same request again with small formatting changes
 7. Use `web.open` with just the normalized URL unless the user asks for something more specific.
-   Correct single-URL example:
-   `{"open": [{"url": "https://example.com"}]}`
-8. Use the web tool to capture each unique URL exactly once. Prefer a full-page screenshot at `1280x720`
-    unless the user asks for a viewport-only look.
-    Rules for the screenshot call:
-    - for one page, the screenshot array must contain exactly one item
-    - `w` must be the integer literal `1280`, not a float like `1280.0`
-    - include `h: 720`
-    - include `full_page: true` inside each screenshot item
-    - NEVER duplicate the same URL - the screenshot array must only have unique URLs
+    Correct single-URL example:
+    `{"open": {"url": "https://example.com"}}`
+8. Use the web tool to capture each unique URL exactly 3 times at different scroll positions to get full page coverage.
+    - always use `dimensions: "1280x720"`
+    - always use `scroll_down` values of exactly `0.0`, `0.5`, and `1.0` for three separate calls
+    - NEVER duplicate the same URL in the same call
     - NEVER repeat a URL in one call, even across separate calls
-    - Always deduplicate your screenshot array before making the call
-   Bad example:
-   `{"screenshot": [{"url": "https://example.com", "w": 1280}, {"url": "https://example.com", "w": 1280}]}`
-   Correct single-URL example:
-   `{"screenshot": [{"url": "https://example.com", "w": 1280, "h": 720, "full_page": true}]}`
-   Correct two-URL example:
-   `{"screenshot": [{"url": "https://a.com", "w": 1280, "h": 720, "full_page": true}, {"url": "https://b.com", "w": 1280, "h": 720, "full_page": true}]}`
-   If `full_page` is omitted, `w` is not an integer, or the same URL is repeated, the capture is wrong.
+    - Always deduplicate your screenshot calls before making them
+    Bad example (single call, wrong format):
+    `{"screenshot": [{"url": "https://example.com", "w": 1280}]}`
+    Correct single-URL example (3 calls for full coverage):
+    `{"screenshot": {"url": "https://example.com", "dimensions": "1280x720", "scroll_down": 0.0}}`
+    `{"screenshot": {"url": "https://example.com", "dimensions": "1280x720", "scroll_down": 0.5}}`
+    `{"screenshot": {"url": "https://example.com", "dimensions": "1280x720", "scroll_down": 1.0}}`
+    Correct two-URL example (6 calls total):
+    `{"screenshot": {"url": "https://a.com", "dimensions": "1280x720", "scroll_down": 0.0}}`
+    `{"screenshot": {"url": "https://a.com", "dimensions": "1280x720", "scroll_down": 0.5}}`
+    `{"screenshot": {"url": "https://a.com", "dimensions": "1280x720", "scroll_down": 1.0}}`
+    `{"screenshot": {"url": "https://b.com", "dimensions": "1280x720", "scroll_down": 0.0}}`
+    `{"screenshot": {"url": "https://b.com", "dimensions": "1280x720", "scroll_down": 0.5}}`
+    `{"screenshot": {"url": "https://b.com", "dimensions": "1280x720", "scroll_down": 1.0}}`
+    If the same URL is repeated, dimensions format is wrong, or scroll_down values are missing, the capture is wrong.
 9. Evaluate both the page content and what you see on screen against the 4 CRO pillars.
 10. Deliver the result in the exact format below.
 11. After each roast, save it with `flexus_policy_document` so the user can track history.
